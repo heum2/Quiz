@@ -2,19 +2,31 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { Home } from '../screens';
+import { RootStackParamList } from './types';
+
+import { Home, Quizzes, Results } from '../screens';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigation(): JSX.Element {
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}
-        initialRouteName="Home">
-        <Stack.Screen name="Home" component={Home} />
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen
+          name="Home"
+          options={{ headerShown: false }}
+          component={Home}
+        />
+        <Stack.Screen
+          name="Quizzes"
+          options={{ headerShown: false }}
+          component={Quizzes}
+        />
+        <Stack.Screen
+          name="Results"
+          options={{ headerShown: false }}
+          component={Results}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
