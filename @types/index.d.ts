@@ -1,0 +1,3 @@
+type RootStackParamList = {
+  Home: undefined;
+};
