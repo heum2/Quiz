@@ -1,10 +1,33 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import styled from 'styled-components/native';
 
 import { RootStackParamList } from '../navigations/types';
 
+import Container from '../components/Container';
+import { Colors, Mixins } from '../styles';
+import Text from '../components/Text';
+
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+
+const TitleWrapper = styled.View`
+  align-items: center;
+  margin-bottom: ${Mixins.scaleSize(20)}px;
+`;
+
+const ButtonWrapper = styled.View`
+  width: 100%;
+  margin-top: ${Mixins.scaleSize(20)}px;
+`;
+
+const Button = styled.TouchableOpacity`
+  background-color: ${props => props.theme.colors.main};
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  height: ${Mixins.scaleSize(50)}px;
+  border-radius: ${Mixins.scaleSize(20)}px;
+`;
 
 function Home({ navigation }: Props): JSX.Element {
   const handleMoveQuizzes = () => {
@@ -12,64 +35,29 @@ function Home({ navigation }: Props): JSX.Element {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.titleWrapper}>
-        <Text style={styles.title}>🤔</Text>
-        <Text style={styles.title}>Quiz</Text>
-      </View>
+    <Container justifyContent="center" alignItems="center">
+      <TitleWrapper>
+        <Text color={Colors.SECONDARY} fontWeight={700} fontSize={50}>
+          🤔
+        </Text>
+        <Text fontWeight={700} fontSize={50}>
+          Quiz
+        </Text>
+      </TitleWrapper>
 
-      <Text style={styles.subtitle}>Let's Play!</Text>
+      <Text fontWeight={700} fontSize={24}>
+        Let's Play!
+      </Text>
 
-      <View style={styles.buttonWrapper}>
-        <TouchableOpacity
-          style={styles.startButton}
-          onPress={handleMoveQuizzes}>
-          <Text style={styles.startButtonText}>퀴즈 풀기</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      <ButtonWrapper>
+        <Button onPress={handleMoveQuizzes}>
+          <Text fontWeight={700} fontSize={24}>
+            퀴즈 풀기
+          </Text>
+        </Button>
+      </ButtonWrapper>
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1F1147',
-    paddingHorizontal: '5%',
-  },
-  titleWrapper: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  buttonWrapper: {
-    width: '100%',
-    marginTop: 20,
-  },
-  title: {
-    color: '#49fdc7',
-    fontWeight: '700',
-    fontSize: 42,
-  },
-  subtitle: {
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 24,
-  },
-  startButton: {
-    backgroundColor: '#6949FD',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 50,
-    borderRadius: 20,
-  },
-  startButtonText: {
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 24,
-  },
-});
 
 export default Home;

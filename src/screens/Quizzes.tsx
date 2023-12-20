@@ -1,167 +1,209 @@
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TouchableHighlight,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { useQuery } from 'react-query';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import styled, { css } from 'styled-components/native';
 
 import { RootStackParamList } from '../navigations/types';
 
+import Container from '../components/Container';
+import Text from '../components/Text';
+
 import { fetchQuizzes } from '../lib/api';
+import { Colors, Mixins } from '../styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Quizzes'>;
 
+type SelectedAnswer = {
+  answer: boolean;
+  index: number;
+};
+
+const Main = styled.View`
+  flex: 5;
+  justify-content: center;
+`;
+
+const QuestionWrapper = styled.View`
+  margin-bottom: ${Mixins.scaleSize(20)}px;
+`;
+
+const AnswerButton = styled.TouchableOpacity<{
+  isSelected: boolean | null;
+  isCorrect: boolean | null;
+}>`
+  border-radius: ${Mixins.scaleSize(10)}px;
+  padding: ${Mixins.scaleSize(10)}px;
+
+  ${props =>
+    (props.isSelected || props.isCorrect) &&
+    css`
+      background-color: ${Colors.SECONDARY};
+    `}
+
+  ${props =>
+    props.isSelected === false &&
+    css`
+      background-color: red;
+    `}
+`;
+
+const AnswerWrapper = styled.View`
+  flex-direction: row;
+  align-items: center;
+`;
+
+const NumberCircle = styled.View`
+  border-radius: ${Mixins.scaleSize(20)}px;
+  margin-right: ${Mixins.scaleSize(10)}px;
+  background-color: ${Colors.PRIMARY};
+  padding: ${Mixins.scaleSize(5)}px;
+  width: ${Mixins.scaleSize(30)}px;
+  height: ${Mixins.scaleSize(30)}px;
+  justify-content: center;
+  align-items: center;
+`;
+
+const Footer = styled.View`
+  flex: 1;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const FooterButton = styled.TouchableOpacity<{ visible: boolean }>`
+  border-radius: ${Mixins.scaleSize(10)}px;
+  background-color: ${props => props.theme.colors.main};
+  width: 100%;
+  align-items: center;
+  padding: ${Mixins.scaleSize(10)}px;
+  opacity: 0;
+
+  ${props =>
+    props.visible &&
+    css`
+      opacity: 1;
+    `}
+`;
+
 function Quizzes({ navigation }: Props): JSX.Element {
-  const [current, setCurrent] = useState(0);
+  const [activeQuestion, setActiveQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<SelectedAnswer>();
+  const [result, setResult] = useState({
+    startTime: 0,
+    correctAnswers: 0,
+    incorrectAnswers: 0,
+  });
 
   const { isLoading, error, data } = useQuery('quizData', fetchQuizzes);
 
   useEffect(() => {
-    const start = performance.now();
+    setResult(prev => ({ ...prev, startTime: performance.now() }));
+
     return () => {
-      const end = performance.now();
-      const time = end - start;
-      console.log(`${time} ms`);
+      setSelectedAnswer(undefined);
     };
   }, []);
 
   if (isLoading) {
     return (
-      <View>
-        <Text>Loading...</Text>
-      </View>
+      <Container justifyContent="center" alignItems="center">
+        <ActivityIndicator color="#ffffff" size="large" />
+      </Container>
     );
   }
 
   if (error || !data) {
     return (
-      <View>
-        <Text>An error has occurred:</Text>
-      </View>
+      <Container justifyContent="center" alignItems="center">
+        <Text>Error</Text>
+      </Container>
     );
   }
 
-  const handlePrev = () => {
-    if (current < 1) {
-      // TODO: 시간 종료 (나중에 팝업 띄우기)
-      navigation.goBack();
-      return;
+  const handleClickAnswer = (answer: string, index: number) => {
+    if (answer === data.data.results[activeQuestion].correct_answer) {
+      setSelectedAnswer({ answer: true, index });
+    } else {
+      setSelectedAnswer({ answer: false, index });
     }
-
-    setCurrent(prev => prev - 1);
   };
 
   const handleNext = () => {
-    if (current + 1 >= data.data.results.length) {
-      // TODO: 문제 저장 및 정답, 오답 체크, 시간 종료 (나중에 팝업 띄우기)
+    if (activeQuestion >= data.data.results.length - 1) {
+      // TODO: 문제 저장 및 정답, 오답 체크, 시간 종료
+      const end = performance.now();
+      const time = end - result.startTime;
+      console.log(`${time} ms`);
       return navigation.replace('Results');
     }
 
-    setCurrent(prev => prev + 1);
+    setActiveQuestion(prev => prev + 1);
+    setResult(prev =>
+      selectedAnswer
+        ? { ...prev, correctAnswers: prev.correctAnswers + 1 }
+        : { ...prev, incorrectAnswers: prev.incorrectAnswers + 1 },
+    );
+    setSelectedAnswer(undefined);
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.main}>
-        <View style={styles.questionWrapper}>
-          <Text style={styles.current}>{current + 1}/10</Text>
-          <Text style={styles.question}>
-            {data.data.results[current].question}
+    <Container>
+      <Main>
+        <QuestionWrapper>
+          <Text color={Colors.SECONDARY}>{activeQuestion + 1}/10</Text>
+          <Text fontSize={18}>
+            {data.data.results[activeQuestion].question}
           </Text>
-        </View>
+        </QuestionWrapper>
         <View>
-          {data.data.results[current].answers.map((item, index) => (
-            <TouchableHighlight
+          {data.data.results[activeQuestion].answers.map((item, index) => (
+            <AnswerButton
               key={item}
-              underlayColor="#49fdc7"
-              style={styles.answerButton}
-              onPress={() => {}}>
-              <View style={styles.answerWrapper}>
-                <View style={styles.numberCircle}>
-                  <Text style={styles.numberText}>{index + 1}</Text>
-                </View>
-                <Text style={styles.answer}>{item}</Text>
-              </View>
-            </TouchableHighlight>
+              disabled={selectedAnswer ? true : false}
+              isSelected={
+                selectedAnswer?.index === index ? selectedAnswer.answer : null
+              }
+              isCorrect={
+                selectedAnswer
+                  ? data.data.results[activeQuestion].correct_answer === item
+                  : null
+              }
+              onPress={() => handleClickAnswer(item, index)}>
+              <AnswerWrapper>
+                <NumberCircle>
+                  <Text fontWeight={500}>{index + 1}</Text>
+                </NumberCircle>
+                <Text
+                  color={
+                    selectedAnswer &&
+                    data.data.results[activeQuestion].correct_answer === item
+                      ? Colors.BACKGROUND_LIGHT
+                      : undefined
+                  }
+                  fontWeight={500}>
+                  {item}
+                </Text>
+              </AnswerWrapper>
+            </AnswerButton>
           ))}
         </View>
-      </View>
+      </Main>
 
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton} onPress={handlePrev}>
-          <Text style={styles.footerButtonText}>이전</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton} onPress={handleNext}>
-          <Text style={styles.footerButtonText}>다음</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      <Footer>
+        <FooterButton
+          visible={!!selectedAnswer}
+          disabled={!selectedAnswer}
+          onPress={handleNext}>
+          <Text fontWeight={700}>
+            {activeQuestion === data.data.results.length - 1
+              ? '완료'
+              : '다음 문항'}
+          </Text>
+        </FooterButton>
+      </Footer>
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1F1147',
-    paddingHorizontal: '5%',
-  },
-  main: { flex: 5, justifyContent: 'center' },
-  questionWrapper: {
-    marginBottom: 20,
-  },
-  current: {
-    color: '#49fdc7',
-  },
-  question: {
-    color: '#ffffff',
-    fontSize: 18,
-  },
-  answerButton: {
-    borderRadius: 10,
-    padding: 10,
-  },
-  answerWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  numberCircle: {
-    borderRadius: 20,
-    marginRight: 10,
-    backgroundColor: '#6949FD',
-    padding: 5,
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  numberText: {
-    color: '#ffffff',
-    fontWeight: '500',
-  },
-  answer: {
-    color: '#ffffff',
-  },
-  footer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  footerButton: {
-    borderRadius: 10,
-    backgroundColor: '#6949FD',
-    width: '25%',
-    alignItems: 'center',
-    padding: 10,
-  },
-  footerButtonText: {
-    color: '#ffffff',
-    fontWeight: '700',
-  },
-});
 
 export default Quizzes;
