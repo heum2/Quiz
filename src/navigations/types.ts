@@ -1,5 +1,5 @@
 export type RootStackParamList = {
   Home: undefined;
-  Quizzes: undefined;
+  Quizzes: { isRestart: boolean };
   Results: undefined;
 };

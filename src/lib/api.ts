@@ -2,7 +2,7 @@ import axios from 'axios';
 import { decodeHTMLEntities } from './decode';
 import { shuffle } from './shuffle';
 
-type QuizResult = {
+export type Quiz = {
   type: string;
   difficulty: 'easy' | 'medium' | 'hard';
   category: string;
@@ -14,7 +14,7 @@ type QuizResult = {
 
 type QuizData = {
   response_code: number;
-  results: QuizResult[];
+  results: Quiz[];
 };
 
 export async function fetchQuizzes() {

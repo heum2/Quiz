@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { useQuery } from 'react-query';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import styled, { css } from 'styled-components/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { RootStackParamList } from '../navigations/types';
 
@@ -15,8 +16,9 @@ import { Colors, Mixins } from '../styles';
 type Props = NativeStackScreenProps<RootStackParamList, 'Quizzes'>;
 
 type SelectedAnswer = {
-  answer: boolean;
+  isCorrect: boolean;
   index: number;
+  answers: boolean[];
 };
 
 const Main = styled.View`
@@ -86,7 +88,7 @@ const FooterButton = styled.TouchableOpacity<{ visible: boolean }>`
     `}
 `;
 
-function Quizzes({ navigation }: Props): JSX.Element {
+function Quizzes({ route, navigation }: Props): JSX.Element {
   const [activeQuestion, setActiveQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<SelectedAnswer>();
   const [result, setResult] = useState({
@@ -95,7 +97,16 @@ function Quizzes({ navigation }: Props): JSX.Element {
     incorrectAnswers: 0,
   });
 
-  const { isLoading, error, data } = useQuery('quizData', fetchQuizzes);
+  const { isLoading, isRefetching, error, data } = useQuery(
+    'quizData',
+    fetchQuizzes,
+    {
+      enabled: !route.params.isRestart,
+      keepPreviousData: route.params.isRestart,
+      cacheTime: route.params.isRestart ? Infinity : undefined,
+      staleTime: route.params.isRestart ? Infinity : undefined,
+    },
+  );
 
   useEffect(() => {
     setResult(prev => ({ ...prev, startTime: performance.now() }));
@@ -105,7 +116,7 @@ function Quizzes({ navigation }: Props): JSX.Element {
     };
   }, []);
 
-  if (isLoading) {
+  if (isLoading || isRefetching) {
     return (
       <Container justifyContent="center" alignItems="center">
         <ActivityIndicator color="#ffffff" size="large" />
@@ -122,25 +133,46 @@ function Quizzes({ navigation }: Props): JSX.Element {
   }
 
   const handleClickAnswer = (answer: string, index: number) => {
-    if (answer === data.data.results[activeQuestion].correct_answer) {
-      setSelectedAnswer({ answer: true, index });
-    } else {
-      setSelectedAnswer({ answer: false, index });
-    }
+    const { correct_answer } = data.data.results[activeQuestion];
+    const answers = selectedAnswer?.answers ?? [];
+
+    setSelectedAnswer({
+      index,
+      isCorrect: answer === correct_answer,
+      answers: [...answers, answer === correct_answer],
+    });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (!selectedAnswer) {
+      return;
+    }
+
     if (activeQuestion >= data.data.results.length - 1) {
-      // TODO: 문제 저장 및 정답, 오답 체크, 시간 종료
       const end = performance.now();
-      const time = end - result.startTime;
-      console.log(`${time} ms`);
+
+      const saveData = {
+        questions: data.data.results,
+        timeRequired: end - result.startTime,
+        correctAnswerCount: selectedAnswer.isCorrect
+          ? result.correctAnswers + 1
+          : result.correctAnswers,
+        incorrectAnswerCount: selectedAnswer.isCorrect
+          ? result.incorrectAnswers
+          : result.incorrectAnswers + 1,
+        selectedAnswers: selectedAnswer.answers,
+      };
+
+      const stringifyAnswers = JSON.stringify(saveData);
+      await AsyncStorage.setItem('answer', stringifyAnswers);
+
       return navigation.replace('Results');
     }
 
     setActiveQuestion(prev => prev + 1);
+
     setResult(prev =>
-      selectedAnswer
+      selectedAnswer.isCorrect
         ? { ...prev, correctAnswers: prev.correctAnswers + 1 }
         : { ...prev, incorrectAnswers: prev.incorrectAnswers + 1 },
     );
@@ -162,7 +194,9 @@ function Quizzes({ navigation }: Props): JSX.Element {
               key={item}
               disabled={selectedAnswer ? true : false}
               isSelected={
-                selectedAnswer?.index === index ? selectedAnswer.answer : null
+                selectedAnswer?.index === index
+                  ? selectedAnswer.isCorrect
+                  : null
               }
               isCorrect={
                 selectedAnswer

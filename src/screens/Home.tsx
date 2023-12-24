@@ -31,7 +31,7 @@ const Button = styled.TouchableOpacity`
 
 function Home({ navigation }: Props): JSX.Element {
   const handleMoveQuizzes = () => {
-    navigation.push('Quizzes');
+    navigation.push('Quizzes', { isRestart: false });
   };
 
   return (
