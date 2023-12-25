@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StackScreenProps } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   ActivityIndicator,
   LayoutChangeEvent,
   LayoutRectangle,
-  TouchableOpacity,
-  View,
   processColor,
 } from 'react-native';
 import { PieChart } from 'react-native-charts-wrapper';
+import styled from 'styled-components/native';
 
 import HomeSvg from '../assets/images/home.svg';
 import RestartSvg from '../assets/images/restart.svg';
@@ -22,7 +21,7 @@ import Text from '../components/Text';
 import type { Quiz } from '../lib/api';
 import { Colors, Mixins } from '../styles';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Results'>;
+type Props = StackScreenProps<RootStackParamList, 'Results'>;
 
 type Answer = {
   questions: Quiz[];
@@ -31,6 +30,36 @@ type Answer = {
   incorrectAnswerCount: number;
   selectedAnswers: boolean[];
 };
+
+const TextWrapper = styled.View<{ paddingVertical: number }>`
+  padding-top: ${props => Mixins.scaleSize(props.paddingVertical)}px;
+  padding-bottom: ${props => Mixins.scaleSize(props.paddingVertical)}px;
+`;
+
+const ChartWrapper = styled.View`
+  width: ${Mixins.WINDOW_WIDTH - Mixins.scaleSize(40)}px;
+  height: ${Mixins.WINDOW_WIDTH - Mixins.scaleSize(40)}px;
+  background-color: ${Colors.PRIMARY_DARK};
+  border-radius: ${Mixins.scaleSize(20)}px;
+`;
+
+const ButtonWrapper = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  width: ${Mixins.WINDOW_WIDTH - Mixins.scaleSize(40)}px;
+  flex: 1;
+`;
+
+const IconButton = styled.TouchableOpacity`
+  width: 20%;
+  height: ${Mixins.scaleSize(30)}PX;
+  background-color: ${Colors.PRIMARY};
+  padding: ${Mixins.scaleSize(30)}px;
+  justify-content: center;
+  align-items: center;
+  border-radius: ${Mixins.scaleSize(10)}px;
+`;
 
 function Results({ navigation }: Props): JSX.Element {
   const [value, setValue] = useState<Answer>();
@@ -81,20 +110,13 @@ function Results({ navigation }: Props): JSX.Element {
 
   return (
     <Container alignItems="center">
-      <View style={{ paddingVertical: Mixins.scaleSize(20) }}>
+      <TextWrapper paddingVertical={20}>
         <Text fontSize={24} fontWeight={700}>
           결과
         </Text>
-      </View>
+      </TextWrapper>
 
-      <View
-        style={{
-          width: Mixins.WINDOW_WIDTH - Mixins.scaleSize(40),
-          height: Mixins.WINDOW_WIDTH - Mixins.scaleSize(40),
-          backgroundColor: Colors.PRIMARY_DARK,
-          borderRadius: 20,
-        }}
-        onLayout={handleLayout}>
+      <ChartWrapper onLayout={handleLayout}>
         {!!layout && (
           <PieChart
             style={{ flex: 1 }}
@@ -151,45 +173,19 @@ function Results({ navigation }: Props): JSX.Element {
             maxAngle={360}
           />
         )}
-      </View>
-      <View style={{ paddingVertical: Mixins.scaleSize(10) }}>
+      </ChartWrapper>
+      <TextWrapper paddingVertical={10}>
         <Text fontSize={18}>소요시간: {timeFormat(value.timeRequired)}</Text>
-      </View>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-around',
-          width: Mixins.WINDOW_WIDTH - Mixins.scaleSize(40),
-          flex: 1,
-        }}>
-        <TouchableOpacity
-          onPress={() => navigation.replace('Home')}
-          style={{
-            width: '20%',
-            height: Mixins.scaleSize(30),
-            backgroundColor: Colors.PRIMARY,
-            padding: Mixins.scaleSize(30),
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 10,
-          }}>
+      </TextWrapper>
+      <ButtonWrapper>
+        <IconButton onPress={() => navigation.replace('Home')}>
           <HomeSvg fill="#ffffff" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => navigation.replace('Quizzes', { isRestart: true })}
-          style={{
-            width: '20%',
-            height: Mixins.scaleSize(30),
-            backgroundColor: Colors.PRIMARY,
-            padding: Mixins.scaleSize(30),
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 10,
-          }}>
+        </IconButton>
+        <IconButton
+          onPress={() => navigation.replace('Quizzes', { isRestart: true })}>
           <RestartSvg fill="#ffffff" />
-        </TouchableOpacity>
-      </View>
+        </IconButton>
+      </ButtonWrapper>
     </Container>
   );
 }

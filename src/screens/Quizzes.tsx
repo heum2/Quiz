@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useQuery } from 'react-query';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StackScreenProps } from '@react-navigation/stack';
 import styled, { css } from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -13,7 +13,7 @@ import Text from '../components/Text';
 import { fetchQuizzes } from '../lib/api';
 import { Colors, Mixins } from '../styles';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Quizzes'>;
+type Props = StackScreenProps<RootStackParamList, 'Quizzes'>;
 
 type SelectedAnswer = {
   isCorrect: boolean;

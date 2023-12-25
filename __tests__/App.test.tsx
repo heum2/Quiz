@@ -1,17 +1,14 @@
-/**
- * @format
- */
-
 import 'react-native';
 import React from 'react';
+import { render } from '@testing-library/react-native';
+
+import { describe, it, expect } from '@jest/globals';
+
 import App from '../App';
 
-// Note: import explicitly to use the types shipped with jest.
-import { it } from '@jest/globals';
-
-// Note: test renderer must be required after react-native.
-import renderer from 'react-test-renderer';
-
-it('renders correctly', () => {
-  renderer.create(<App />);
+describe('App', () => {
+  it('App이 정상적으로 렌더링 되는가?', () => {
+    const screen = render(<App />);
+    expect(screen.toJSON()).toMatchSnapshot();
+  });
 });

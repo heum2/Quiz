@@ -2,6 +2,8 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ThemeProvider } from 'styled-components/native';
 
+import 'react-native-gesture-handler';
+
 import { RootNavigation } from './src/navigations';
 import { theme } from './src/styles';
 

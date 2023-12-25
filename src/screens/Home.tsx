@@ -1,5 +1,5 @@
 import React from 'react';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StackScreenProps } from '@react-navigation/stack';
 import styled from 'styled-components/native';
 
 import { RootStackParamList } from '../navigations/types';
@@ -8,7 +8,7 @@ import Container from '../components/Container';
 import { Colors, Mixins } from '../styles';
 import Text from '../components/Text';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+type Props = StackScreenProps<RootStackParamList, 'Home'>;
 
 const TitleWrapper = styled.View`
   align-items: center;

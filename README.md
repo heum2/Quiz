@@ -2,26 +2,30 @@
 
 ## 소개
 
-간단한 '퀴즈' 모바일 앱을 만들었습니다.
+퀴즈 API를 이용해 간단한 '퀴즈' 모바일 앱을 만들었습니다.
 
 ## 미리보기
 
 ### 이미지
 
-![스크린샷 1]()
-![스크린샷 2]()
+![home](https://raw.githubusercontent.com/heum2/image-archive/main/quiz_home.png)
+![quizzes](https://raw.githubusercontent.com/heum2/image-archive/main/quiz_quizzes.png)
+![results](https://raw.githubusercontent.com/heum2/image-archive/main/quiz_results.png)
 
 ### 영상
 
 ## 설치 및 실행
 
 ```bash
-# 설치
+# node 버전
+nvm use || nvm install v20.10.0
+
+# 프로젝트 복사
 git clone https://github.com/heum2/Quiz.git
 cd Quiz
 npm i
 
-# 실행
+# 프로젝트 실행
 npm run start
 a or npm run android
 ```
@@ -35,12 +39,7 @@ a or npm run android
 
 ### 주요기능
 
-| 기능  | 내용  |
-| ----- | ----- |
-| 기능1 | 내용1 |
-| 기능2 | 내용2 |
-
-### 상세기능
-
-- 상세기능 1
-- 상세기능 2
+| 기능             | 내용                                                               |
+| ---------------- | ------------------------------------------------------------------ |
+| 소요된 시간 체크 | 퀴즈 시작 시 시간과 끝났을 때의 시간의 차이를 계산하여 보여줍니다. |
+| 다시풀기         | React Query 캐시를 이용해 이전 데이터를 다시 가져와서 보여줍니다.  |
